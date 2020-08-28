@@ -9,16 +9,16 @@
  */
 
 #include <iostream>
+#include <memory>
 
 /*
  * Target
  * defines specific interface that Client uses
  */
-class Target
-{
-public:
-  virtual ~Target() {}
-  
+class Target {
+ public:
+  virtual ~Target() = default;
+
   virtual void request() = 0;
   // ...
 };
@@ -29,13 +29,9 @@ public:
  * to Adapter it will get calls that client makes on the Target
  *
  */
-class Adaptee
-{
-public:
-  void specificRequest()
-  {
-    std::cout << "specific request" << std::endl;
-  }
+class Adaptee {
+ public:
+  void specificRequest() { std::cout << "specific request" << std::endl; }
   // ...
 };
 
@@ -44,34 +40,32 @@ public:
  * implements the Target interface and when it gets a method call it
  * delegates the call to a Adaptee
  */
-class Adapter : public Target
-{
-public:
-  Adapter() : adaptee() {}
-  
-  ~Adapter()
-  {
-    delete adaptee;
-  }
-  
-  void request()
-  {
+class Adapter : public Target {
+ public:
+  // Adapter() { adaptee = std::make_shared<Adaptee>(); }
+  Adapter() : adaptee(std::make_shared<Adaptee>()) {}
+
+  ~Adapter() {}
+
+  void request() override {
     adaptee->specificRequest();
-  // ...
+    // ...
   }
   // ...
 
-private:
-  Adaptee *adaptee;
+ private:
+  // Adaptee *adaptee;
+  std::shared_ptr<Adaptee> adaptee;
   // ...
 };
 
+int main() {
+  // Target *t = new Adapter();
+  // t->request();
+  // delete t;
 
-int main()
-{
-  Target *t = new Adapter();
+  std::shared_ptr<Target> t = std::make_shared<Adapter>();
   t->request();
-  delete t;
-  
+
   return 0;
 }
