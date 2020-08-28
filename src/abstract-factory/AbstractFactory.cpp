@@ -9,18 +9,17 @@
  */
 
 #include <iostream>
-
+#include <memory>
 /*
  * Product A
  * products implement the same interface so that the classes can refer
  * to the interface not the concrete product
  */
-class ProductA
-{
-public:
+class ProductA {
+ public:
   virtual ~ProductA() {}
-  
-  virtual const char* getName() = 0;
+
+  virtual const char *getName() = 0;
   // ...
 };
 
@@ -28,27 +27,19 @@ public:
  * ConcreteProductAX and ConcreteProductAY
  * define objects to be created by concrete factory
  */
-class ConcreteProductAX : public ProductA
-{
-public:
+class ConcreteProductAX : public ProductA {
+ public:
   ~ConcreteProductAX() {}
-  
-  const char* getName()
-  {
-    return "A-X";
-  }
+
+  const char *getName() { return "A-X"; }
   // ...
 };
 
-class ConcreteProductAY : public ProductA
-{
-public:
+class ConcreteProductAY : public ProductA {
+ public:
   ~ConcreteProductAY() {}
-  
-  const char* getName()
-  {
-    return "A-Y";
-  }
+
+  const char *getName() { return "A-Y"; }
   // ...
 };
 
@@ -57,12 +48,11 @@ public:
  * same as Product A, Product B declares interface for concrete products
  * where each can produce an entire set of products
  */
-class ProductB
-{
-public:
+class ProductB {
+ public:
   virtual ~ProductB() {}
-  
-  virtual const char* getName() = 0;
+
+  virtual const char *getName() = 0;
   // ...
 };
 
@@ -70,27 +60,19 @@ public:
  * ConcreteProductBX and ConcreteProductBY
  * same as previous concrete product classes
  */
-class ConcreteProductBX : public ProductB
-{
-public:
+class ConcreteProductBX : public ProductB {
+ public:
   ~ConcreteProductBX() {}
-  
-  const char* getName()
-  {
-    return "B-X";
-  }
+
+  const char *getName() { return "B-X"; }
   // ...
 };
 
-class ConcreteProductBY : public ProductB
-{
-public:
+class ConcreteProductBY : public ProductB {
+ public:
   ~ConcreteProductBY() {}
-  
-  const char* getName()
-  {
-    return "B-Y";
-  }
+
+  const char *getName() { return "B-Y"; }
   // ...
 };
 
@@ -98,13 +80,12 @@ public:
  * Abstract Factory
  * provides an abstract interface for creating a family of products
  */
-class AbstractFactory
-{
-public:
+class AbstractFactory {
+ public:
   virtual ~AbstractFactory() {}
-  
-  virtual ProductA *createProductA() = 0;
-  virtual ProductB *createProductB() = 0;
+
+  virtual std::unique_ptr<ProductA> createProductA() = 0;
+  virtual std::unique_ptr<ProductB> createProductB() = 0;
 };
 
 /*
@@ -112,55 +93,44 @@ public:
  * each concrete factory create a family of products and client uses
  * one of these factories so it never has to instantiate a product object
  */
-class ConcreteFactoryX : public AbstractFactory
-{
-public:
+class ConcreteFactoryX : public AbstractFactory {
+ public:
   ~ConcreteFactoryX() {}
-  
-  ProductA *createProductA()
-  {
-    return new ConcreteProductAX();
+
+  std::unique_ptr<ProductA> createProductA() {
+    return std::move(std::make_unique<ConcreteProductAX>());
   }
-  ProductB *createProductB()
-  {
-    return new ConcreteProductBX();
+  std::unique_ptr<ProductB> createProductB() {
+    return std::move(std::make_unique<ConcreteProductBX>());
   }
-  // ...
 };
 
-class ConcreteFactoryY : public AbstractFactory
-{
-public:
+class ConcreteFactoryY : public AbstractFactory {
+ public:
   ~ConcreteFactoryY() {}
 
-  ProductA *createProductA()
-  {
-    return new ConcreteProductAY();
+  std::unique_ptr<ProductA> createProductA() {
+    return std::move(std::make_unique<ConcreteProductAY>());
   }
-  ProductB *createProductB()
-  {
-    return new ConcreteProductBY();
+  std::unique_ptr<ProductB> createProductB() {
+    return std::move(std::make_unique<ConcreteProductBY>());
   }
-  // ...
 };
 
+int main() {
+  std::unique_ptr<ConcreteFactoryX> factoryX =
+      std::make_unique<ConcreteFactoryX>();
+  std::unique_ptr<ConcreteFactoryY> factoryY =
+      std::make_unique<ConcreteFactoryY>();
 
-int main()
-{
-  ConcreteFactoryX *factoryX = new ConcreteFactoryX();
-  ConcreteFactoryY *factoryY = new ConcreteFactoryY();
+  std::cout << "Product: " << factoryX->createProductA()->getName()
+            << std::endl;
+  std::cout << "Product: " << factoryY->createProductA()->getName()
+            << std::endl;
+  std::cout << "Product: " << factoryX->createProductB()->getName()
+            << std::endl;
+  std::cout << "Product: " << factoryY->createProductB()->getName()
+            << std::endl;
 
-  ProductA *p1 = factoryX->createProductA();
-  std::cout << "Product: " << p1->getName() << std::endl;
-  
-  ProductA *p2 = factoryY->createProductA();
-  std::cout << "Product: " << p2->getName() << std::endl;
-  
-  delete p1;
-  delete p2;
-  
-  delete factoryX;
-  delete factoryY;
-  
   return 0;
 }
